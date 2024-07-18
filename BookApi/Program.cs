@@ -7,10 +7,20 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog(); 
 
 ConfigureServices(builder.Services, builder.Configuration);
 
@@ -45,10 +55,10 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     builder.Services.AddControllers();
 
-    builder.Logging.ClearProviders();
-    builder.Logging.AddConsole();
-    builder.Logging.AddDebug();
-    builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+    //builder.Logging.ClearProviders();
+    //builder.Logging.AddConsole();
+    //builder.Logging.AddDebug();
+    //builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
     var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);
     services.AddAuthentication(x =>

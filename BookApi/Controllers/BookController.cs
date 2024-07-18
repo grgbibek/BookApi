@@ -24,6 +24,8 @@ namespace BookApi.Controllers
         [Authorize(Policy = "User")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooks([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string sortBy = "Id")
         {
+            _logger.LogInformation("Fetching books.");
+
             var booksQuery = _repository.GetBooksAsync();
 
             // Apply sorting
