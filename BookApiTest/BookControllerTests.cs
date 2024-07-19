@@ -1,6 +1,7 @@
 using BookApi.Controllers;
 using BookApi.Data.Repository;
 using BookApi.Entities;
+using BookApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -32,18 +33,18 @@ namespace BookApi.Tests
                 new Book { Id = 1, Title = "Book 1", Author = "Author 1", Genre = "Genre 1", PublicationYear = 2001 },
                 new Book { Id = 2, Title = "Book 2", Author = "Author 2", Genre = "Genre 2", PublicationYear = 2002 },
                 new Book { Id = 3, Title = "Book 3", Author = "Author 3", Genre = "Genre 3", PublicationYear = 2003 },
-            }.AsQueryable();
+            };
 
-            _mockRepository.Setup(repo => repo.GetBooksAsync()).Returns(books);
+            _mockRepository.Setup(repo => repo.GetBooksAsync(1,2, "PublicationYear")).ReturnsAsync(books);
 
             // Act
-            var result = await _controller.GetBooks();
+            var result = await _controller.GetBooks(1, 2, "PublicationYear");
 
             // Assert
             Assert.IsInstanceOf<OkObjectResult>(result.Result);
             var okResult = result.Result as OkObjectResult;
-            Assert.IsInstanceOf<IEnumerable<Book>>(okResult.Value);
-            var returnedBooks = okResult.Value as IEnumerable<Book>;
+            Assert.IsInstanceOf<List<Book>>(okResult.Value);
+            var returnedBooks = okResult.Value as List<Book>;
             Assert.AreEqual(books.Count(), returnedBooks.Count());
         }
 

@@ -3,6 +3,7 @@ using BookApi.Entities;
 using BookApi.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BookApi.Controllers
 {
@@ -22,17 +23,11 @@ namespace BookApi.Controllers
 
         [HttpGet]
         [Authorize(Policy = "User")]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string sortBy = "Id")
+        public async Task<ActionResult<List<Book>>> GetBooks([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string sortBy = "Id")
         {
             _logger.LogInformation("Fetching books.");
 
-            var booksQuery = _repository.GetBooksAsync();
-
-            // Apply sorting
-            booksQuery = SortBooks(booksQuery, sortBy);
-
-            // Apply pagination
-            var books = await PaginatedList<Book>.CreateAsync(booksQuery, page, pageSize);
+            var books = await _repository.GetBooksAsync(page, pageSize, sortBy);
 
             return Ok(books);
         }
@@ -83,22 +78,6 @@ namespace BookApi.Controllers
             return NoContent();
         }
 
-        private IQueryable<Book> SortBooks(IQueryable<Book> booksQuery, string sortBy)
-        {
-            switch (sortBy.ToLower())
-            {
-                case "title":
-                    return booksQuery.OrderBy(b => b.Title);
-                case "author":
-                    return booksQuery.OrderBy(b => b.Author);
-                case "genre":
-                    return booksQuery.OrderBy(b => b.Genre);
-                case "publicationyear":
-                    return booksQuery.OrderBy(b => b.PublicationYear);
-                default:
-                    return booksQuery.OrderBy(b => b.Id);
-            }
-        }
     }
 
     

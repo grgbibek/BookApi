@@ -1,4 +1,6 @@
 ﻿using BookApi.Entities;
+using BookApi.Helpers;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookApi.Data.Repository
@@ -12,9 +14,10 @@ namespace BookApi.Data.Repository
             _context = context;
         }
 
-        public  IQueryable<Book> GetBooksAsync()
+        public async Task<List<Book>> GetBooksAsync(int page, int pageSize, string sortBy)
         {
-            return _context.Books.AsQueryable();
+            var booksQuery = _context.Books.AsQueryable();
+            return await PaginatedList<Book>.CreateAsync(booksQuery, page, pageSize);
         }
 
         public async Task<Book> GetBookByIdAsync(int id)
@@ -44,6 +47,24 @@ namespace BookApi.Data.Repository
                 await _context.SaveChangesAsync();
             }
         }
+
+        private IQueryable<Book> SortBooks(IQueryable<Book> booksQuery, string sortBy)
+        {
+            switch (sortBy.ToLower())
+            {
+                case "title":
+                    return booksQuery.OrderBy(b => b.Title);
+                case "author":
+                    return booksQuery.OrderBy(b => b.Author);
+                case "genre":
+                    return booksQuery.OrderBy(b => b.Genre);
+                case "publicationyear":
+                    return booksQuery.OrderBy(b => b.PublicationYear);
+                default:
+                    return booksQuery.OrderBy(b => b.Id);
+            }
+        }
+
     }
 
 }
